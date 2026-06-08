@@ -1,27 +1,29 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { motion } from 'framer-motion'
 import HanziWriter from 'hanzi-writer'
 import {
   ArrowLeft,
   BookOpen,
-  Brush,
   ChevronLeft,
   Gamepad2,
   Lock,
   Play,
   RotateCcw,
+  Sparkles,
   Star,
   Trophy,
   Volume2,
 } from 'lucide-react'
 import './App.css'
+import { cn } from './lib/utils'
 
 type Screen = 'home' | 'map' | 'practice'
 
 type Lesson = {
   id: string
   title: string
-  island: string
-  icon: string
+  tone: string
   unlocked: boolean
   characters: string[]
 }
@@ -37,24 +39,21 @@ const lessons: Lesson[] = [
   {
     id: 'nature-one',
     title: '自然島',
-    island: 'starter',
-    icon: '🌳',
+    tone: 'from-emerald-300 via-lime-300 to-yellow-200',
     unlocked: true,
     characters: ['人', '口', '日', '月', '山', '水'],
   },
   {
     id: 'body-one',
     title: '身體島',
-    island: 'body',
-    icon: '😊',
+    tone: 'from-sky-300 via-cyan-200 to-emerald-200',
     unlocked: true,
     characters: ['手', '心', '目', '耳', '足', '女'],
   },
   {
     id: 'animal-one',
     title: '動物島',
-    island: 'animal',
-    icon: '🐼',
+    tone: 'from-amber-200 via-orange-200 to-rose-200',
     unlocked: false,
     characters: ['牛', '羊', '馬', '鳥', '魚', '犬'],
   },
@@ -82,16 +81,96 @@ const wordInfo: Record<string, WordInfo> = {
 }
 
 const learningPath = [
-  { character: '人', x: 23, y: 72, unlocked: true },
-  { character: '口', x: 43, y: 57, unlocked: true },
-  { character: '日', x: 31, y: 37, unlocked: true },
-  { character: '手', x: 61, y: 33, unlocked: true },
-  { character: '月', x: 72, y: 53, unlocked: false },
-  { character: '山', x: 63, y: 76, unlocked: false },
+  { character: '人', x: 18, y: 69, unlocked: true },
+  { character: '口', x: 38, y: 55, unlocked: true },
+  { character: '日', x: 28, y: 34, unlocked: true },
+  { character: '手', x: 63, y: 32, unlocked: true },
+  { character: '月', x: 76, y: 55, unlocked: false },
+  { character: '山', x: 61, y: 76, unlocked: false },
 ]
+
+const buttonVariants = cva(
+  'group relative isolate inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border font-black tracking-wide shadow-lg outline-none transition duration-300 hover:-translate-y-0.5 focus-visible:ring-4 active:translate-y-0 disabled:pointer-events-none disabled:opacity-60',
+  {
+    variants: {
+      tone: {
+        green:
+          'border-emerald-300/70 bg-gradient-to-b from-lime-300 via-emerald-400 to-green-600 text-white shadow-emerald-900/30 focus-visible:ring-lime-300/50',
+        gold:
+          'border-amber-200/80 bg-gradient-to-b from-yellow-200 via-amber-300 to-orange-500 text-amber-950 shadow-amber-900/30 focus-visible:ring-amber-300/50',
+        coral:
+          'border-rose-200/80 bg-gradient-to-b from-rose-200 via-orange-300 to-red-500 text-white shadow-red-900/30 focus-visible:ring-rose-300/50',
+        glass:
+          'border-white/35 bg-white/20 text-white shadow-slate-950/20 backdrop-blur-xl focus-visible:ring-white/50',
+      },
+      size: {
+        sm: 'min-h-11 px-4 text-sm',
+        md: 'min-h-14 px-5 text-base sm:text-lg',
+        lg: 'min-h-20 px-8 text-2xl sm:text-3xl',
+        square: 'size-14 p-0',
+      },
+    },
+    defaultVariants: {
+      tone: 'green',
+      size: 'md',
+    },
+  },
+)
+
+type MagicButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
+  VariantProps<typeof buttonVariants> & {
+    children: React.ReactNode
+  }
 
 function getCuhkSoundUrl(jyutping: string) {
   return `/api/cuhk-sound?s=${encodeURIComponent(jyutping)}`
+}
+
+function MagicButton({ className, tone, size, children, ...props }: MagicButtonProps) {
+  return (
+    <button className={cn(buttonVariants({ tone, size }), className)} {...props}>
+      <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent opacity-0 transition-opacity duration-300 group-hover:animate-shimmer group-hover:opacity-100" />
+      <span className="relative z-10 inline-flex items-center justify-center gap-2">{children}</span>
+    </button>
+  )
+}
+
+function AuroraBackdrop() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(255,255,255,0.58),transparent_13rem),radial-gradient(circle_at_82%_16%,rgba(186,230,253,0.7),transparent_15rem),linear-gradient(120deg,#38bdf8,#86efac,#fde68a,#5eead4)] bg-[length:220%_220%] animate-aurora" />
+      <div className="absolute -left-20 top-12 size-64 rounded-full bg-lime-300/35 blur-3xl" />
+      <div className="absolute -right-16 bottom-20 size-72 rounded-full bg-cyan-300/40 blur-3xl" />
+      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-emerald-700/45 to-transparent" />
+    </div>
+  )
+}
+
+function GlowPanel({ className, children }: { className?: string; children: React.ReactNode }) {
+  return (
+    <div className={cn('relative rounded-[2rem] p-[1px]', className)}>
+      <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-r from-white/80 via-lime-300/80 to-cyan-200/80 opacity-80 blur-sm" />
+      <div className="relative rounded-[2rem] border border-white/35 bg-white/55 shadow-glow backdrop-blur-2xl">
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function WoodSign({ children, compact = false }: { children: React.ReactNode; compact?: boolean }) {
+  return (
+    <div
+      className={cn(
+        'relative mx-auto overflow-hidden rounded-3xl border border-amber-100/40 bg-gradient-to-b from-amber-500 via-orange-600 to-yellow-900 px-7 py-4 text-center font-display font-black text-white shadow-gold',
+        compact ? 'text-3xl sm:text-5xl' : 'text-4xl sm:text-7xl',
+      )}
+    >
+      <div className="absolute inset-x-0 top-0 h-1/2 bg-white/16" />
+      <div className="absolute inset-y-2 left-3 w-2 rounded-full bg-lime-400/80" />
+      <div className="absolute inset-y-2 right-3 w-2 rounded-full bg-lime-400/80" />
+      <span className="relative drop-shadow-[0_4px_0_rgba(69,26,3,0.75)]">{children}</span>
+    </div>
+  )
 }
 
 function App() {
@@ -149,21 +228,21 @@ function App() {
     setMistakes(0)
     setStatus(info.hint)
 
-    const size = Math.min(Math.max(host.clientWidth, 260), 480)
+    const size = Math.min(Math.max(host.clientWidth, 250), 450)
     const writer = HanziWriter.create(host, activeCharacter, {
       width: size,
       height: size,
-      padding: 20,
+      padding: 18,
       showOutline: true,
       showCharacter: false,
       strokeAnimationSpeed: 1.05,
       delayBetweenStrokes: 130,
       drawingWidth: 32,
-      strokeColor: '#6c6c6c',
-      outlineColor: '#b7b7b7',
-      radicalColor: '#55b636',
-      drawingColor: '#23321f',
-      highlightColor: '#72d44d',
+      strokeColor: '#64748b',
+      outlineColor: '#cbd5e1',
+      radicalColor: '#22c55e',
+      drawingColor: '#172554',
+      highlightColor: '#facc15',
     })
 
     writerRef.current = writer
@@ -226,152 +305,194 @@ function App() {
   }
 
   return (
-    <main className="storybook-app">
+    <main className="relative min-h-svh overflow-hidden bg-slate-950 text-ink">
       <audio ref={audioRef} preload="none" />
+      <AuroraBackdrop />
+
       {screen === 'home' && (
-        <section className="home-screen" aria-label="Kindergarten Chinese home">
-          <div className="bamboo-frame" aria-hidden="true" />
-          <div className="ribbons" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </div>
-          <div className="sky-friends" aria-hidden="true">
-            <span>🕊️</span>
-            <span>🐥</span>
-          </div>
-          <div className="mascot-teacher" aria-hidden="true">
-            <div className="teacher-head" />
-            <div className="teacher-body">
-              <Brush size={66} />
+        <section className="relative z-10 grid min-h-svh place-items-center px-4 py-6" aria-label="Kindergarten Chinese home">
+          <div className="absolute inset-4 rounded-[2.5rem] border border-white/40 bg-white/10 shadow-2xl shadow-emerald-950/25 backdrop-blur-sm" />
+          <motion.div
+            className="relative grid w-full max-w-5xl justify-items-center gap-7"
+            initial={{ opacity: 0, y: 22 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55 }}
+          >
+            <div className="pointer-events-none absolute -top-8 left-6 h-[72svh] w-4 rotate-12 rounded-full bg-gradient-to-b from-fuchsia-400 to-purple-600 shadow-lg shadow-purple-900/20" />
+            <div className="pointer-events-none absolute -top-10 right-8 h-[70svh] w-4 -rotate-12 rounded-full bg-gradient-to-b from-yellow-200 to-orange-400 shadow-lg shadow-orange-900/20" />
+            <div className="rounded-[2rem] border border-white/40 bg-white/25 px-5 py-2 text-sm font-black text-emerald-950 shadow-lg backdrop-blur-xl">
+              <Sparkles className="mr-2 inline size-4 text-yellow-500" />
+              KindergartenChinese
             </div>
-          </div>
-          <h1>熊貓字園</h1>
-          <button type="button" className="start-button" onClick={() => setScreen('map')}>
-            <BookOpen size={42} />
-            開始學習
-          </button>
-          <nav className="home-dock" aria-label="Home activities">
-            <button type="button" onClick={() => setScreen('map')}>
-              <BookOpen size={34} />
-              開始學習
-            </button>
-            <button type="button">
-              <Trophy size={34} />
-              我的星星
-            </button>
-            <button type="button">
-              <Gamepad2 size={34} />
-              趣味遊戲
-            </button>
-          </nav>
+            <motion.h1
+              className="bg-gradient-to-b from-yellow-100 via-yellow-300 to-emerald-400 bg-clip-text text-center font-display text-7xl font-black leading-none tracking-normal text-transparent drop-shadow-[0_8px_0_rgba(20,83,45,0.45)] sm:text-8xl md:text-9xl"
+              animate={{ scale: [1, 1.025, 1] }}
+              transition={{ duration: 3.4, repeat: Infinity }}
+            >
+              熊貓字園
+            </motion.h1>
+            <GlowPanel className="w-full max-w-3xl">
+              <div className="grid items-center gap-5 p-5 sm:grid-cols-[1fr_auto] sm:p-7">
+                <div>
+                  <p className="text-lg font-black text-emerald-950 sm:text-2xl">寫字像闖關一樣亮起來。</p>
+                  <p className="mt-2 max-w-xl text-sm font-bold text-emerald-950/70 sm:text-base">
+                    Follow glowing strokes, collect stars, and travel across character islands.
+                  </p>
+                </div>
+                <MagicButton size="lg" onClick={() => setScreen('map')}>
+                  <BookOpen className="size-8" />
+                  開始學習
+                </MagicButton>
+              </div>
+            </GlowPanel>
+            <nav className="grid w-full max-w-3xl grid-cols-3 gap-3 sm:gap-5" aria-label="Home activities">
+              {[
+                { label: '開始學習', icon: BookOpen, tone: 'green' as const, action: () => setScreen('map') },
+                { label: '我的星星', icon: Trophy, tone: 'gold' as const },
+                { label: '趣味遊戲', icon: Gamepad2, tone: 'glass' as const },
+              ].map((item) => (
+                <MagicButton
+                  key={item.label}
+                  tone={item.tone}
+                  className="aspect-square flex-col rounded-[1.75rem] text-sm sm:text-xl"
+                  onClick={item.action}
+                >
+                  <item.icon className="size-7 sm:size-10" />
+                  {item.label}
+                </MagicButton>
+              ))}
+            </nav>
+          </motion.div>
         </section>
       )}
 
       {screen === 'map' && (
-        <section className="map-screen" aria-label="Chinese character journey">
-          <button type="button" className="round-button back" onClick={() => setScreen('home')} aria-label="Back home">
-            <ArrowLeft size={28} />
-          </button>
-          <div className="wood-title">漢字之旅</div>
-          <div className="island-map">
-            <svg className="path-svg" viewBox="0 0 100 100" aria-hidden="true">
-              <path d="M22 74 C30 62 37 62 43 56 C51 47 52 36 62 33 C72 30 78 40 72 51 C66 64 64 69 64 77" />
+        <section className="relative z-10 min-h-svh px-4 py-4 sm:px-6" aria-label="Chinese character journey">
+          <MagicButton tone="gold" size="square" className="absolute left-4 top-4 z-20 rounded-full" onClick={() => setScreen('home')} aria-label="Back home">
+            <ArrowLeft className="size-7" />
+          </MagicButton>
+          <WoodSign>漢字之旅</WoodSign>
+          <div className="relative mx-auto mt-5 h-[72svh] max-h-[760px] min-h-[560px] w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/20 bg-sky-300/15 shadow-2xl shadow-cyan-950/20 backdrop-blur-sm">
+            <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" aria-hidden="true">
+              <path d="M18 70 C28 58 36 58 43 52 C52 43 52 34 63 31 C75 28 82 41 75 53 C68 66 64 70 61 77" fill="none" stroke="rgba(254, 243, 199, 0.92)" strokeLinecap="round" strokeWidth="6" />
             </svg>
             {lessons.map((lesson, index) => (
-              <button
+              <motion.button
                 type="button"
                 key={lesson.id}
-                className={`island island-${index + 1} ${lesson.unlocked ? '' : 'locked'}`}
+                className={cn(
+                  'absolute grid min-h-36 w-44 place-items-center rounded-[2rem] border border-white/45 bg-gradient-to-br p-4 text-center font-black text-emerald-950 shadow-glow backdrop-blur-xl transition hover:-translate-y-1 sm:min-h-44 sm:w-60',
+                  lesson.tone,
+                  !lesson.unlocked && 'grayscale',
+                  index === 0 && 'left-[6%] top-[18%]',
+                  index === 1 && 'right-[6%] top-[39%]',
+                  index === 2 && 'bottom-[7%] left-[35%]',
+                )}
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12 * index, duration: 0.45 }}
+                whileHover={{ scale: 1.04 }}
                 onClick={() => openLesson(lesson)}
               >
-                <span className="island-icon">{lesson.unlocked ? lesson.icon : <Lock size={32} />}</span>
-                <strong>{lesson.title}</strong>
-              </button>
+                {lesson.unlocked ? <Sparkles className="size-9 text-yellow-500" /> : <Lock className="size-9 text-slate-500" />}
+                <span className="rounded-2xl bg-white/50 px-4 py-2 text-xl shadow-inner">{lesson.title}</span>
+              </motion.button>
             ))}
             {learningPath.map((step) => (
               <button
                 type="button"
                 key={step.character}
-                className={`map-bubble ${step.unlocked ? '' : 'locked'}`}
+                className={cn(
+                  'absolute z-10 grid size-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-3xl border border-white/60 bg-white/75 font-han text-4xl font-black text-amber-950 shadow-gold backdrop-blur-xl transition hover:scale-105 sm:size-24 sm:text-6xl',
+                  !step.unlocked && 'text-slate-500 opacity-80',
+                )}
                 style={{ left: `${step.x}%`, top: `${step.y}%` }}
                 onClick={() => openLesson(lessons[0], step.character)}
               >
-                {step.unlocked ? step.character : <Lock size={21} />}
+                {step.unlocked ? step.character : <Lock className="size-6" />}
               </button>
             ))}
           </div>
-          <div className="level-strip">
-            <Star size={44} fill="currentColor" />
-            <span>等級 1-3</span>
-            <div>
-              <i style={{ width: `${Math.max(progress, 24)}%` }} />
+          <GlowPanel className="mx-auto -mt-12 w-full max-w-3xl">
+            <div className="grid grid-cols-[auto_auto_1fr] items-center gap-4 p-4">
+              <Star className="size-10 text-yellow-400 drop-shadow" fill="currentColor" />
+              <span className="font-display text-xl font-black text-amber-950 sm:text-2xl">等級 1-3</span>
+              <div className="h-4 overflow-hidden rounded-full bg-amber-950/35">
+                <div className="h-full rounded-full bg-gradient-to-r from-lime-300 to-emerald-500 shadow-glow" style={{ width: `${Math.max(progress, 24)}%` }} />
+              </div>
             </div>
-          </div>
+          </GlowPanel>
         </section>
       )}
 
       {screen === 'practice' && (
-        <section className="practice-screen" aria-label={`${activeCharacter} writing practice`}>
-          <header className="practice-top">
-            <div className="flash-card">{activeCharacter}</div>
-            <div className="wood-title compact">和老師一起寫</div>
-            <button type="button" className="sound-button" onClick={playAudio}>
-              <Volume2 size={28} />
-              <span>Audio</span>
-            </button>
+        <section className="relative z-10 grid min-h-svh grid-rows-[auto_auto_1fr_auto] gap-2 px-3 py-2 sm:px-5" aria-label={`${activeCharacter} writing practice`}>
+          <header className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
+            <div className="grid size-20 place-items-center rounded-3xl border border-white/55 bg-white/70 font-han text-5xl font-black text-slate-600 shadow-gold backdrop-blur-xl sm:size-28 sm:text-7xl">
+              {activeCharacter}
+            </div>
+            <WoodSign compact>和老師一起寫</WoodSign>
+            <MagicButton tone="gold" size="square" className="size-16 flex-col rounded-full text-xs sm:size-20" onClick={playAudio}>
+              <Volume2 className="size-6" />
+              Audio
+            </MagicButton>
           </header>
-          <div className="pinyin-pill">Pinyin {activeCharacter}: {info.pinyin}</div>
-          <section className="paper-board">
-            <div className="character-row" aria-label="Lesson characters">
-              {practiceCharacters.map(({ character, done }) => (
-                <button
-                  type="button"
-                  key={character}
-                  className={character === activeCharacter ? 'current' : done ? 'done' : ''}
-                  onClick={() => setActiveIndex(activeLesson.characters.indexOf(character))}
-                >
-                  {done && <Star size={16} fill="currentColor" />}
-                  {character}
-                </button>
-              ))}
-            </div>
-            <div className="writer-card">
-              <div className="writer-grid">
-                <div ref={writerHostRef} className="writer-host" aria-label="Tracing area" />
-              </div>
-              <div className="coach-bubble">{status}</div>
-              <div className="coach" aria-hidden="true">
-                <div className="teacher-head small" />
-                <div className="thumb">👍</div>
-              </div>
-            </div>
-            <div className="score-row">
-              <div className="stars">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <Star key={index} size={34} fill={index < stars ? 'currentColor' : 'transparent'} />
+          <div className="mx-auto rounded-full border border-white/25 bg-emerald-950/50 px-5 py-2 text-center text-base font-black text-lime-50 shadow-lg backdrop-blur-xl sm:text-2xl">
+            Pinyin {activeCharacter}: {info.pinyin}
+          </div>
+          <GlowPanel className="mx-auto w-full max-w-3xl">
+            <div className="grid gap-3 p-3 sm:p-4">
+              <div className="grid auto-cols-[4.6rem] grid-flow-col gap-2 overflow-x-auto pb-1 sm:grid-flow-row sm:grid-cols-6">
+                {practiceCharacters.map(({ character, done }) => (
+                  <button
+                    type="button"
+                    key={character}
+                    className={cn(
+                      'relative grid aspect-[1.15] place-items-center rounded-2xl border border-slate-200 bg-white/85 font-han text-3xl font-black text-amber-950 shadow-inner transition hover:-translate-y-0.5 sm:aspect-[1.55] sm:text-5xl',
+                      character === activeCharacter && 'border-lime-400 bg-lime-100 shadow-glow',
+                    )}
+                    onClick={() => setActiveIndex(activeLesson.characters.indexOf(character))}
+                  >
+                    {done && <Star className="absolute left-2 top-2 size-4 text-yellow-400" fill="currentColor" />}
+                    {character}
+                  </button>
                 ))}
               </div>
-              <strong>{info.meaning}</strong>
-              <span>{completed} 筆 · {mistakes} 次修正</span>
+              <div className="relative mx-auto grid aspect-square w-full max-w-[min(34svh,360px)] place-items-center overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white shadow-2xl">
+                <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_calc(50%-1px),#cbd5e1_calc(50%-1px),#cbd5e1_calc(50%+1px),transparent_calc(50%+1px)),linear-gradient(-45deg,transparent_calc(50%-1px),#cbd5e1_calc(50%-1px),#cbd5e1_calc(50%+1px),transparent_calc(50%+1px))]" />
+                <div className="absolute left-1/2 top-0 h-full w-px bg-slate-300" />
+                <div className="absolute left-0 top-1/2 h-px w-full bg-slate-300" />
+                <div ref={writerHostRef} className="writer-host relative z-10 size-full touch-none" aria-label="Tracing area" />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div className="rounded-3xl border border-white/50 bg-white/70 p-4 shadow-lg backdrop-blur-xl">
+                  <p className="text-lg font-black text-amber-950">{status}</p>
+                  <p className="mt-1 text-sm font-bold text-amber-950/65">{info.meaning} · {completed} 筆 · {mistakes} 次修正</p>
+                </div>
+                <div className="flex text-yellow-400 drop-shadow">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Star key={index} className="size-8" fill={index < stars ? 'currentColor' : 'transparent'} />
+                  ))}
+                </div>
+              </div>
             </div>
-          </section>
-          <nav className="bottom-actions">
-            <button type="button" onClick={() => setScreen('home')}>
-              <ChevronLeft size={26} />
+          </GlowPanel>
+          <nav className="mx-auto grid w-full max-w-3xl grid-cols-4 gap-2" aria-label="Practice controls">
+            <MagicButton tone="gold" size="sm" className="min-h-10" onClick={() => setScreen('home')}>
+              <ChevronLeft className="size-5" />
               主頁
-            </button>
-            <button type="button" className="retry" onClick={replayQuiz}>
-              <RotateCcw size={25} />
+            </MagicButton>
+            <MagicButton tone="coral" size="sm" className="min-h-10" onClick={replayQuiz}>
+              <RotateCcw className="size-5" />
               重試
-            </button>
-            <button type="button" className="demo" onClick={showDemo}>
-              <Play size={25} />
+            </MagicButton>
+            <MagicButton tone="gold" size="sm" className="min-h-10" onClick={showDemo}>
+              <Play className="size-5" />
               示範
-            </button>
-            <button type="button" className="next" onClick={nextCharacter}>
+            </MagicButton>
+            <MagicButton tone="green" size="sm" className="min-h-10" onClick={nextCharacter}>
               下一個
-            </button>
+            </MagicButton>
           </nav>
         </section>
       )}

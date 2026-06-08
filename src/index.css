@@ -1,35 +1,42 @@
-:root {
-  color: #5a270f;
-  background: #78dff0;
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Noto Sans TC',
-    'Microsoft JhengHei',
-    sans-serif;
-  font-synthesis: none;
-  line-height: 1.5;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-* {
-  box-sizing: border-box;
-}
+@layer base {
+  :root {
+    color: #43210f;
+    background: #0f172a;
+    font-family:
+      Nunito,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Noto Sans TC',
+      'Microsoft JhengHei',
+      sans-serif;
+    font-synthesis: none;
+    line-height: 1.5;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-html {
-  background: #78dff0;
-}
+  * {
+    box-sizing: border-box;
+  }
 
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100svh;
-  overflow-x: hidden;
-}
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100svh;
+    overflow-x: hidden;
+  }
 
-#root {
-  min-height: 100svh;
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #root {
+    min-height: 100svh;
+  }
 }
