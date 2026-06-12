@@ -135,13 +135,39 @@ function MagicButton({ className, tone, size, children, ...props }: MagicButtonP
   )
 }
 
-function AuroraBackdrop() {
+function ReferenceBackdrop({ screen }: { screen: Screen }) {
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(255,255,255,0.58),transparent_13rem),radial-gradient(circle_at_82%_16%,rgba(186,230,253,0.7),transparent_15rem),linear-gradient(120deg,#38bdf8,#86efac,#fde68a,#5eead4)] bg-[length:220%_220%] animate-aurora" />
-      <div className="absolute -left-20 top-12 size-64 rounded-full bg-lime-300/35 blur-3xl" />
-      <div className="absolute -right-16 bottom-20 size-72 rounded-full bg-cyan-300/40 blur-3xl" />
-      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-emerald-700/45 to-transparent" />
+    <div className={cn('reference-bg pointer-events-none absolute inset-0 overflow-hidden', `${screen}-bg`)}>
+      <div className="cloud cloud-one" />
+      <div className="cloud cloud-two" />
+      <div className="cloud cloud-three" />
+      {screen === 'home' && (
+        <>
+          <div className="bamboo-frame-bg" />
+          <div className="ribbon ribbon-purple" />
+          <div className="ribbon ribbon-blue" />
+          <div className="ribbon ribbon-yellow" />
+          <div className="home-hills" />
+          <div className="home-waterfall" />
+          <div className="home-bushes" />
+        </>
+      )}
+      {screen === 'map' && (
+        <>
+          <div className="ocean-shine ocean-shine-one" />
+          <div className="ocean-shine ocean-shine-two" />
+          <div className="map-leaves map-leaves-left" />
+          <div className="map-leaves map-leaves-right" />
+        </>
+      )}
+      {screen === 'practice' && (
+        <>
+          <div className="forest-vine forest-vine-left" />
+          <div className="forest-vine forest-vine-right" />
+          <div className="practice-leaves practice-leaves-top" />
+          <div className="practice-leaves practice-leaves-bottom" />
+        </>
+      )}
     </div>
   )
 }
@@ -307,11 +333,11 @@ function App() {
   return (
     <main className="relative min-h-svh overflow-hidden bg-slate-950 text-ink">
       <audio ref={audioRef} preload="none" />
-      <AuroraBackdrop />
+      <ReferenceBackdrop screen={screen} />
 
       {screen === 'home' && (
         <section className="relative z-10 grid min-h-svh place-items-center px-4 py-6" aria-label="Kindergarten Chinese home">
-          <div className="absolute inset-4 rounded-[2.5rem] border border-white/40 bg-white/10 shadow-2xl shadow-emerald-950/25 backdrop-blur-sm" />
+          <div className="absolute inset-4 rounded-[2.5rem] border border-white/35 bg-white/5 shadow-2xl shadow-emerald-950/25" />
           <motion.div
             className="relative grid w-full max-w-5xl justify-items-center gap-7"
             initial={{ opacity: 0, y: 22 }}
@@ -372,7 +398,7 @@ function App() {
             <ArrowLeft className="size-7" />
           </MagicButton>
           <WoodSign>漢字之旅</WoodSign>
-          <div className="relative mx-auto mt-5 h-[72svh] max-h-[760px] min-h-[560px] w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/20 bg-sky-300/15 shadow-2xl shadow-cyan-950/20 backdrop-blur-sm">
+          <div className="relative mx-auto mt-5 h-[72svh] max-h-[760px] min-h-[560px] w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/30 bg-sky-200/10 shadow-2xl shadow-cyan-950/20">
             <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" aria-hidden="true">
               <path d="M18 70 C28 58 36 58 43 52 C52 43 52 34 63 31 C75 28 82 41 75 53 C68 66 64 70 61 77" fill="none" stroke="rgba(254, 243, 199, 0.92)" strokeLinecap="round" strokeWidth="6" />
             </svg>
