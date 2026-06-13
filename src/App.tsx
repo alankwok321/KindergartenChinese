@@ -136,22 +136,20 @@ function MagicButton({ className, tone, size, children, ...props }: MagicButtonP
 }
 
 function ReferenceBackdrop({ screen }: { screen: Screen }) {
+  if (screen === 'home') {
+    return (
+      <div className="home-reference-bg" aria-hidden="true">
+        <div className="home-reference-blur" />
+        <img className="home-reference-image" src="/backgrounds/home-ui-reference.png" alt="" />
+      </div>
+    )
+  }
+
   return (
     <div className={cn('reference-bg pointer-events-none absolute inset-0 overflow-hidden', `${screen}-bg`)}>
       <div className="cloud cloud-one" />
       <div className="cloud cloud-two" />
       <div className="cloud cloud-three" />
-      {screen === 'home' && (
-        <>
-          <div className="bamboo-frame-bg" />
-          <div className="ribbon ribbon-purple" />
-          <div className="ribbon ribbon-blue" />
-          <div className="ribbon ribbon-yellow" />
-          <div className="home-hills" />
-          <div className="home-waterfall" />
-          <div className="home-bushes" />
-        </>
-      )}
       {screen === 'map' && (
         <>
           <div className="ocean-shine ocean-shine-one" />
@@ -336,42 +334,18 @@ function App() {
       <ReferenceBackdrop screen={screen} />
 
       {screen === 'home' && (
-        <section className="relative z-10 grid min-h-svh place-items-center px-4 py-6" aria-label="Kindergarten Chinese home">
-          <div className="absolute inset-4 rounded-[2.5rem] border border-white/35 bg-white/5 shadow-2xl shadow-emerald-950/25" />
+        <section className="relative z-10 min-h-svh px-4 py-6" aria-label="Kindergarten Chinese home">
           <motion.div
-            className="relative grid w-full max-w-5xl justify-items-center gap-7"
+            className="absolute inset-x-0 bottom-[5svh] mx-auto grid w-full max-w-3xl justify-items-center gap-4 px-4 sm:bottom-[6svh]"
             initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55 }}
           >
-            <div className="pointer-events-none absolute -top-8 left-6 h-[72svh] w-4 rotate-12 rounded-full bg-gradient-to-b from-fuchsia-400 to-purple-600 shadow-lg shadow-purple-900/20" />
-            <div className="pointer-events-none absolute -top-10 right-8 h-[70svh] w-4 -rotate-12 rounded-full bg-gradient-to-b from-yellow-200 to-orange-400 shadow-lg shadow-orange-900/20" />
-            <div className="rounded-[2rem] border border-white/40 bg-white/25 px-5 py-2 text-sm font-black text-emerald-950 shadow-lg backdrop-blur-xl">
-              <Sparkles className="mr-2 inline size-4 text-yellow-500" />
-              KindergartenChinese
-            </div>
-            <motion.h1
-              className="bg-gradient-to-b from-yellow-100 via-yellow-300 to-emerald-400 bg-clip-text text-center font-display text-7xl font-black leading-none tracking-normal text-transparent drop-shadow-[0_8px_0_rgba(20,83,45,0.45)] sm:text-8xl md:text-9xl"
-              animate={{ scale: [1, 1.025, 1] }}
-              transition={{ duration: 3.4, repeat: Infinity }}
-            >
-              熊貓字園
-            </motion.h1>
-            <GlowPanel className="w-full max-w-3xl">
-              <div className="grid items-center gap-5 p-5 sm:grid-cols-[1fr_auto] sm:p-7">
-                <div>
-                  <p className="text-lg font-black text-emerald-950 sm:text-2xl">寫字像闖關一樣亮起來。</p>
-                  <p className="mt-2 max-w-xl text-sm font-bold text-emerald-950/70 sm:text-base">
-                    Follow glowing strokes, collect stars, and travel across character islands.
-                  </p>
-                </div>
-                <MagicButton size="lg" onClick={() => setScreen('map')}>
-                  <BookOpen className="size-8" />
-                  開始學習
-                </MagicButton>
-              </div>
-            </GlowPanel>
-            <nav className="grid w-full max-w-3xl grid-cols-3 gap-3 sm:gap-5" aria-label="Home activities">
+            <MagicButton size="lg" className="min-w-72 rounded-[1.65rem] border-4 border-amber-800/70 shadow-2xl shadow-green-950/35" onClick={() => setScreen('map')}>
+              <BookOpen className="size-8" />
+              開始學習
+            </MagicButton>
+            <nav className="grid w-full grid-cols-3 gap-3 sm:gap-5" aria-label="Home activities">
               {[
                 { label: '開始學習', icon: BookOpen, tone: 'green' as const, action: () => setScreen('map') },
                 { label: '我的星星', icon: Trophy, tone: 'gold' as const },
