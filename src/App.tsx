@@ -78,12 +78,12 @@ const wordInfo: Record<string, WordInfo> = {
 }
 
 const learningPath = [
-  { character: '人', x: 18, y: 69, unlocked: true },
-  { character: '口', x: 38, y: 55, unlocked: true },
-  { character: '日', x: 28, y: 34, unlocked: true },
+  { character: '人', x: 38, y: 68, unlocked: true },
+  { character: '口', x: 52, y: 58, unlocked: true },
+  { character: '日', x: 63, y: 50, unlocked: true },
   { character: '手', x: 63, y: 32, unlocked: true },
-  { character: '月', x: 76, y: 55, unlocked: false },
-  { character: '山', x: 61, y: 76, unlocked: false },
+  { character: '月', x: 74, y: 24, unlocked: false },
+  { character: '山', x: 71, y: 73, unlocked: false },
 ]
 
 const buttonVariants = cva(
@@ -326,53 +326,52 @@ function App() {
       )}
 
       {screen === 'map' && (
-        <section className="relative z-10 min-h-svh px-4 py-4 sm:px-6" aria-label="Chinese character journey">
+        <section className="relative z-10 min-h-svh overflow-hidden px-4 py-4 sm:px-6" aria-label="Chinese character journey">
           <MagicButton tone="gold" size="square" className="absolute left-4 top-4 z-20 rounded-full" onClick={() => setScreen('home')} aria-label="Back home">
             <ArrowLeft className="size-7" />
           </MagicButton>
-          <WoodSign>漢字之旅</WoodSign>
-          <div className="relative mx-auto mt-5 h-[72svh] max-h-[760px] min-h-[560px] w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/30 bg-sky-200/10 shadow-2xl shadow-cyan-950/20">
-            <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" aria-hidden="true">
-              <path d="M18 70 C28 58 36 58 43 52 C52 43 52 34 63 31 C75 28 82 41 75 53 C68 66 64 70 61 77" fill="none" stroke="rgba(254, 243, 199, 0.92)" strokeLinecap="round" strokeWidth="6" />
-            </svg>
-            {lessons.map((lesson, index) => (
-              <motion.button
-                type="button"
-                key={lesson.id}
-                className={cn(
-                  'absolute grid min-h-36 w-44 place-items-center rounded-[2rem] border border-white/45 bg-gradient-to-br p-4 text-center font-black text-emerald-950 shadow-glow backdrop-blur-xl transition hover:-translate-y-1 sm:min-h-44 sm:w-60',
-                  lesson.tone,
-                  !lesson.unlocked && 'grayscale',
-                  index === 0 && 'left-[6%] top-[18%]',
-                  index === 1 && 'right-[6%] top-[39%]',
-                  index === 2 && 'bottom-[7%] left-[35%]',
-                )}
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.12 * index, duration: 0.45 }}
-                whileHover={{ scale: 1.04 }}
-                onClick={() => openLesson(lesson)}
-              >
-                {lesson.unlocked ? <Sparkles className="size-9 text-yellow-500" /> : <Lock className="size-9 text-slate-500" />}
-                <span className="rounded-2xl bg-white/50 px-4 py-2 text-xl shadow-inner">{lesson.title}</span>
-              </motion.button>
-            ))}
+          <div className="pointer-events-none absolute inset-x-0 top-[3svh] z-10 px-20">
+            <WoodSign>漢字之旅</WoodSign>
+          </div>
+          <div className="map-art-layer">
             {learningPath.map((step) => (
-              <button
+              <motion.button
                 type="button"
                 key={step.character}
                 className={cn(
-                  'absolute z-10 grid size-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-3xl border border-white/60 bg-white/75 font-han text-4xl font-black text-amber-950 shadow-gold backdrop-blur-xl transition hover:scale-105 sm:size-24 sm:text-6xl',
-                  !step.unlocked && 'text-slate-500 opacity-80',
+                  'map-road-node pointer-events-auto',
+                  !step.unlocked && 'map-road-node-locked',
                 )}
                 style={{ left: `${step.x}%`, top: `${step.y}%` }}
                 onClick={() => openLesson(lessons[0], step.character)}
               >
                 {step.unlocked ? step.character : <Lock className="size-6" />}
-              </button>
+              </motion.button>
+            ))}
+            {lessons.map((lesson, index) => (
+              <motion.button
+                type="button"
+                key={lesson.id}
+                className={cn(
+                  'map-island-button pointer-events-auto',
+                  !lesson.unlocked && 'map-island-button-locked',
+                  index === 0 && 'left-[31%] top-[36%]',
+                  index === 1 && 'left-[73%] top-[51%]',
+                  index === 2 && 'left-[72%] top-[74%]',
+                )}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.08 * index, duration: 0.35 }}
+                whileHover={{ scale: 1.06 }}
+                onClick={() => openLesson(lesson)}
+                aria-label={lesson.title}
+              >
+                {lesson.unlocked ? <Sparkles className="size-6 text-yellow-300" /> : <Lock className="size-6 text-slate-500" />}
+                <span>{lesson.title}</span>
+              </motion.button>
             ))}
           </div>
-          <GlowPanel className="mx-auto -mt-12 w-full max-w-3xl">
+          <GlowPanel className="absolute inset-x-4 bottom-4 z-20 mx-auto w-[min(42rem,calc(100%-2rem))]">
             <div className="grid grid-cols-[auto_auto_1fr] items-center gap-4 p-4">
               <Star className="size-10 text-yellow-400 drop-shadow" fill="currentColor" />
               <span className="font-display text-xl font-black text-amber-950 sm:text-2xl">等級 1-3</span>
