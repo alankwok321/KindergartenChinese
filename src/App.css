@@ -8,7 +8,7 @@
   background: #7dd3fc;
 }
 
-.home-reference-bg {
+.screen-image-bg {
   background: #c7f6db;
   inset: 0;
   overflow: hidden;
@@ -16,19 +16,19 @@
   position: absolute;
 }
 
-.home-reference-blur {
-  background-image: url('/backgrounds/home-ui-reference.png');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  filter: blur(28px) saturate(1.05);
-  inset: -36px;
+.screen-image-blur {
+  display: block;
+  filter: blur(26px) saturate(1.08);
+  height: 100%;
+  inset: -2%;
+  object-fit: cover;
   opacity: 0.72;
   position: absolute;
-  transform: scale(1.04);
+  transform: scale(1.08);
+  width: 100%;
 }
 
-.home-reference-image {
+.screen-image-panel {
   display: block;
   height: 100%;
   inset: 0;
@@ -39,9 +39,39 @@
   width: 100%;
 }
 
+.start-image-button {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  filter: drop-shadow(0 12px 16px rgba(49, 78, 21, 0.28));
+  padding: 0;
+  transition:
+    filter 180ms ease,
+    transform 180ms ease;
+}
+
+.start-image-button:hover {
+  filter: drop-shadow(0 16px 20px rgba(49, 78, 21, 0.36)) brightness(1.04);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.start-image-button:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.start-image-button img {
+  display: block;
+  height: auto;
+  width: clamp(250px, 30vw, 390px);
+}
+
 @media (orientation: portrait) {
-  .home-reference-image {
+  .screen-image-panel {
     object-fit: cover;
+  }
+
+  .start-image-button img {
+    width: min(78vw, 340px);
   }
 }
 

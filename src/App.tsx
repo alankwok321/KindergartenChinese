@@ -4,15 +4,12 @@ import { motion } from 'framer-motion'
 import HanziWriter from 'hanzi-writer'
 import {
   ArrowLeft,
-  BookOpen,
   ChevronLeft,
-  Gamepad2,
   Lock,
   Play,
   RotateCcw,
   Sparkles,
   Star,
-  Trophy,
   Volume2,
 } from 'lucide-react'
 import './App.css'
@@ -136,36 +133,11 @@ function MagicButton({ className, tone, size, children, ...props }: MagicButtonP
 }
 
 function ReferenceBackdrop({ screen }: { screen: Screen }) {
-  if (screen === 'home') {
-    return (
-      <div className="home-reference-bg" aria-hidden="true">
-        <div className="home-reference-blur" />
-        <img className="home-reference-image" src="/backgrounds/home-ui-reference.png" alt="" />
-      </div>
-    )
-  }
-
+  const backgroundSrc = `/backgrounds/${screen}-panel.png`
   return (
-    <div className={cn('reference-bg pointer-events-none absolute inset-0 overflow-hidden', `${screen}-bg`)}>
-      <div className="cloud cloud-one" />
-      <div className="cloud cloud-two" />
-      <div className="cloud cloud-three" />
-      {screen === 'map' && (
-        <>
-          <div className="ocean-shine ocean-shine-one" />
-          <div className="ocean-shine ocean-shine-two" />
-          <div className="map-leaves map-leaves-left" />
-          <div className="map-leaves map-leaves-right" />
-        </>
-      )}
-      {screen === 'practice' && (
-        <>
-          <div className="forest-vine forest-vine-left" />
-          <div className="forest-vine forest-vine-right" />
-          <div className="practice-leaves practice-leaves-top" />
-          <div className="practice-leaves practice-leaves-bottom" />
-        </>
-      )}
+    <div className="screen-image-bg" aria-hidden="true">
+      <img className="screen-image-blur" src={backgroundSrc} alt="" />
+      <img className="screen-image-panel" src={backgroundSrc} alt="" />
     </div>
   )
 }
@@ -341,27 +313,14 @@ function App() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55 }}
           >
-            <MagicButton size="lg" className="min-w-72 rounded-[1.65rem] border-4 border-amber-800/70 shadow-2xl shadow-green-950/35" onClick={() => setScreen('map')}>
-              <BookOpen className="size-8" />
-              開始學習
-            </MagicButton>
-            <nav className="grid w-full grid-cols-3 gap-3 sm:gap-5" aria-label="Home activities">
-              {[
-                { label: '開始學習', icon: BookOpen, tone: 'green' as const, action: () => setScreen('map') },
-                { label: '我的星星', icon: Trophy, tone: 'gold' as const },
-                { label: '趣味遊戲', icon: Gamepad2, tone: 'glass' as const },
-              ].map((item) => (
-                <MagicButton
-                  key={item.label}
-                  tone={item.tone}
-                  className="aspect-square flex-col rounded-[1.75rem] text-sm sm:text-xl"
-                  onClick={item.action}
-                >
-                  <item.icon className="size-7 sm:size-10" />
-                  {item.label}
-                </MagicButton>
-              ))}
-            </nav>
+            <button
+              type="button"
+              className="start-image-button"
+              onClick={() => setScreen('map')}
+              aria-label="開始學習"
+            >
+              <img src="/backgrounds/start-learning-button.png" alt="" aria-hidden="true" />
+            </button>
           </motion.div>
         </section>
       )}
