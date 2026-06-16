@@ -3,6 +3,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { motion } from 'framer-motion'
 import HanziWriter from 'hanzi-writer'
 import {
+  ArrowLeft,
   ChevronLeft,
   Play,
   RotateCcw,
@@ -20,6 +21,13 @@ type Lesson = {
   tone: string
   unlocked: boolean
   characters: string[]
+}
+
+type MapIsland = {
+  lessonIndex: number
+  x: number
+  y: number
+  image: string
 }
 
 type WordInfo = {
@@ -73,6 +81,12 @@ const wordInfo: Record<string, WordInfo> = {
   魚: { pinyin: 'yú', jyutping: 'jyu4', meaning: 'fish', hint: '魚身寬寬，下面四點。' },
   犬: { pinyin: 'quǎn', jyutping: 'hyun2', meaning: 'dog', hint: '大字加一點。' },
 }
+
+const mapIslands: MapIsland[] = [
+  { lessonIndex: 0, x: 31, y: 32, image: '/map-assets/island-unlocked-1.png' },
+  { lessonIndex: 1, x: 70, y: 27, image: '/map-assets/island-locked-1.png' },
+  { lessonIndex: 2, x: 66, y: 55, image: '/map-assets/island-locked-2.png' },
+]
 
 const buttonVariants = cva(
   'group relative isolate inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border font-black tracking-wide shadow-lg outline-none transition duration-300 hover:-translate-y-0.5 focus-visible:ring-4 active:translate-y-0 disabled:pointer-events-none disabled:opacity-60',
@@ -159,7 +173,9 @@ function WoodSign({ children, compact = false }: { children: React.ReactNode; co
 
 function App() {
   const [screen, setScreen] = useState<Screen>('home')
-  const [activeLesson] = useState(lessons[0])
+  const [activeLesson, setActiveLesson] = useState(lessons[0])
+  const [activeLessonIndex, setActiveLessonIndex] = useState(0)
+  const [unlockedLessonCount, setUnlockedLessonCount] = useState(1)
   const [activeIndex, setActiveIndex] = useState(0)
   const [status, setStatus] = useState('跟着灰色筆劃，用手指或滑鼠描一描。')
   const [stars, setStars] = useState(1)
@@ -173,6 +189,8 @@ function App() {
 
   const activeCharacter = activeLesson.characters[activeIndex] ?? activeLesson.characters[0]
   const info = wordInfo[activeCharacter]
+  const mapProgress =
+    lessons.length <= 1 ? 100 : Math.round(((unlockedLessonCount - 1) / (lessons.length - 1)) * 100)
 
   const practiceCharacters = useMemo(
     () => activeLesson.characters.map((character, index) => ({ character, done: index < activeIndex })),
@@ -245,6 +263,9 @@ function App() {
         onComplete: () => {
           setStars((count) => Math.min(count + 1, 5))
           setStatus('完成！可以按下一個。')
+          if (activeIndex === activeLesson.characters.length - 1) {
+            setUnlockedLessonCount((count) => Math.min(Math.max(count, activeLessonIndex + 2), lessons.length))
+          }
         },
       })
       .catch(() => setStatus('這個字暫時未能載入筆順，請試下一個。'))
@@ -252,7 +273,16 @@ function App() {
     return () => {
       writer.cancelQuiz()
     }
-  }, [activeCharacter, info.hint, resetCount, screen])
+  }, [activeCharacter, activeIndex, activeLesson.characters.length, activeLessonIndex, info.hint, resetCount, screen])
+
+  function openLesson(lessonIndex: number) {
+    if (lessonIndex >= unlockedLessonCount) return
+    const lesson = lessons[lessonIndex]
+    setActiveLesson(lesson)
+    setActiveLessonIndex(lessonIndex)
+    setActiveIndex(0)
+    setScreen('practice')
+  }
 
   function replayQuiz() {
     setResetCount((count) => count + 1)
@@ -306,7 +336,59 @@ function App() {
       )}
 
       {screen === 'map' && (
-        <section className="relative z-10 min-h-svh" aria-label="Level selection background" />
+        <section className="relative z-10 min-h-svh overflow-hidden" aria-label="Chinese character journey">
+          <div className="map-ui-layer">
+            <button type="button" className="map-back-button" onClick={() => setScreen('home')} aria-label="Back home">
+              <ArrowLeft className="size-[58%]" />
+            </button>
+
+            <img className="map-title-image" src="/map-assets/journey-title.png" alt="漢字之旅" />
+
+            <svg className="map-road" viewBox="0 0 100 100" aria-hidden="true" preserveAspectRatio="none">
+              <path
+                className="map-road-shadow"
+                d="M31 34 C47 33 51 25 66 27 C81 29 79 45 68 52 C61 57 58 64 64 71"
+              />
+              <path
+                className="map-road-main"
+                d="M31 34 C47 33 51 25 66 27 C81 29 79 45 68 52 C61 57 58 64 64 71"
+              />
+            </svg>
+
+            {mapIslands.map((island) => {
+              const lesson = lessons[island.lessonIndex]
+              const isUnlocked = island.lessonIndex < unlockedLessonCount
+              const imageSrc = isUnlocked ? '/map-assets/island-unlocked-1.png' : island.image
+
+              return (
+                <motion.button
+                  type="button"
+                  key={lesson.id}
+                  className={cn('map-island', !isUnlocked && 'map-island-locked')}
+                  style={{ left: `${island.x}%`, top: `${island.y}%` }}
+                  initial={{ opacity: 0, y: 20, scale: 0.94 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 0.12 * island.lessonIndex, duration: 0.42 }}
+                  whileHover={isUnlocked ? { y: -6, scale: 1.04 } : undefined}
+                  onClick={() => openLesson(island.lessonIndex)}
+                  aria-label={isUnlocked ? lesson.title : `${lesson.title} locked`}
+                  disabled={!isUnlocked}
+                >
+                  <img src={imageSrc} alt="" aria-hidden="true" />
+                  <span>{lesson.title}</span>
+                </motion.button>
+              )
+            })}
+
+            <div className="map-progress-panel" aria-label={`Level progress ${mapProgress}%`}>
+              <Star className="map-progress-star" fill="currentColor" />
+              <span>等級 1-3</span>
+              <div className="map-progress-track">
+                <div className="map-progress-fill" style={{ width: `${Math.max(mapProgress, 18)}%` }} />
+              </div>
+            </div>
+          </div>
+        </section>
       )}
 
       {screen === 'practice' && (
