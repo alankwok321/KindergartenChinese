@@ -3,12 +3,9 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { motion } from 'framer-motion'
 import HanziWriter from 'hanzi-writer'
 import {
-  ArrowLeft,
   ChevronLeft,
-  Lock,
   Play,
   RotateCcw,
-  Sparkles,
   Star,
   Volume2,
 } from 'lucide-react'
@@ -76,15 +73,6 @@ const wordInfo: Record<string, WordInfo> = {
   魚: { pinyin: 'yú', jyutping: 'jyu4', meaning: 'fish', hint: '魚身寬寬，下面四點。' },
   犬: { pinyin: 'quǎn', jyutping: 'hyun2', meaning: 'dog', hint: '大字加一點。' },
 }
-
-const learningPath = [
-  { character: '人', x: 38, y: 68, unlocked: true },
-  { character: '口', x: 52, y: 58, unlocked: true },
-  { character: '日', x: 63, y: 50, unlocked: true },
-  { character: '手', x: 63, y: 32, unlocked: true },
-  { character: '月', x: 74, y: 24, unlocked: false },
-  { character: '山', x: 71, y: 73, unlocked: false },
-]
 
 const buttonVariants = cva(
   'group relative isolate inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border font-black tracking-wide shadow-lg outline-none transition duration-300 hover:-translate-y-0.5 focus-visible:ring-4 active:translate-y-0 disabled:pointer-events-none disabled:opacity-60',
@@ -171,7 +159,7 @@ function WoodSign({ children, compact = false }: { children: React.ReactNode; co
 
 function App() {
   const [screen, setScreen] = useState<Screen>('home')
-  const [activeLesson, setActiveLesson] = useState(lessons[0])
+  const [activeLesson] = useState(lessons[0])
   const [activeIndex, setActiveIndex] = useState(0)
   const [status, setStatus] = useState('跟着灰色筆劃，用手指或滑鼠描一描。')
   const [stars, setStars] = useState(1)
@@ -185,7 +173,6 @@ function App() {
 
   const activeCharacter = activeLesson.characters[activeIndex] ?? activeLesson.characters[0]
   const info = wordInfo[activeCharacter]
-  const progress = Math.round(((activeIndex + completed / 6) / activeLesson.characters.length) * 100)
 
   const practiceCharacters = useMemo(
     () => activeLesson.characters.map((character, index) => ({ character, done: index < activeIndex })),
@@ -267,13 +254,6 @@ function App() {
     }
   }, [activeCharacter, info.hint, resetCount, screen])
 
-  function openLesson(lesson: Lesson, character = lesson.characters[0]) {
-    if (!lesson.unlocked) return
-    setActiveLesson(lesson)
-    setActiveIndex(Math.max(0, lesson.characters.indexOf(character)))
-    setScreen('practice')
-  }
-
   function replayQuiz() {
     setResetCount((count) => count + 1)
   }
@@ -326,61 +306,7 @@ function App() {
       )}
 
       {screen === 'map' && (
-        <section className="relative z-10 min-h-svh overflow-hidden px-4 py-4 sm:px-6" aria-label="Chinese character journey">
-          <MagicButton tone="gold" size="square" className="absolute left-4 top-4 z-20 rounded-full" onClick={() => setScreen('home')} aria-label="Back home">
-            <ArrowLeft className="size-7" />
-          </MagicButton>
-          <div className="pointer-events-none absolute inset-x-0 top-[3svh] z-10 px-20">
-            <WoodSign>漢字之旅</WoodSign>
-          </div>
-          <div className="map-art-layer">
-            {learningPath.map((step) => (
-              <motion.button
-                type="button"
-                key={step.character}
-                className={cn(
-                  'map-road-node pointer-events-auto',
-                  !step.unlocked && 'map-road-node-locked',
-                )}
-                style={{ left: `${step.x}%`, top: `${step.y}%` }}
-                onClick={() => openLesson(lessons[0], step.character)}
-              >
-                {step.unlocked ? step.character : <Lock className="size-6" />}
-              </motion.button>
-            ))}
-            {lessons.map((lesson, index) => (
-              <motion.button
-                type="button"
-                key={lesson.id}
-                className={cn(
-                  'map-island-button pointer-events-auto',
-                  !lesson.unlocked && 'map-island-button-locked',
-                  index === 0 && 'left-[31%] top-[36%]',
-                  index === 1 && 'left-[73%] top-[51%]',
-                  index === 2 && 'left-[72%] top-[74%]',
-                )}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.08 * index, duration: 0.35 }}
-                whileHover={{ scale: 1.06 }}
-                onClick={() => openLesson(lesson)}
-                aria-label={lesson.title}
-              >
-                {lesson.unlocked ? <Sparkles className="size-6 text-yellow-300" /> : <Lock className="size-6 text-slate-500" />}
-                <span>{lesson.title}</span>
-              </motion.button>
-            ))}
-          </div>
-          <GlowPanel className="absolute inset-x-4 bottom-4 z-20 mx-auto w-[min(42rem,calc(100%-2rem))]">
-            <div className="grid grid-cols-[auto_auto_1fr] items-center gap-4 p-4">
-              <Star className="size-10 text-yellow-400 drop-shadow" fill="currentColor" />
-              <span className="font-display text-xl font-black text-amber-950 sm:text-2xl">等級 1-3</span>
-              <div className="h-4 overflow-hidden rounded-full bg-amber-950/35">
-                <div className="h-full rounded-full bg-gradient-to-r from-lime-300 to-emerald-500 shadow-glow" style={{ width: `${Math.max(progress, 24)}%` }} />
-              </div>
-            </div>
-          </GlowPanel>
-        </section>
+        <section className="relative z-10 min-h-svh" aria-label="Level selection background" />
       )}
 
       {screen === 'practice' && (
